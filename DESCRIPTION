@@ -1,0 +1,13 @@
+Package: ViewAndClean3M
+Title: 3M Document Viewer and Cleaner
+Version: 0.0.1
+Authors@R: person('Mitchell', 'Tague', email = 'tague.mitchell@epa.gov', role = c('cre', 'aut'))
+Description: PKG_DESC.
+License: MIT + file LICENSE
+Imports: 
+    config (>= 0.3.1),
+    golem (>= 0.4.1),
+    shiny (>= 1.7.3)
+Encoding: UTF-8
+LazyData: true
+RoxygenNote: 7.1.1
