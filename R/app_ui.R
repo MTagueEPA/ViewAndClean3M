@@ -3,17 +3,13 @@
 #' @param request Internal parameter for `{shiny}`.
 #'     DO NOT REMOVE.
 #' @import shiny
+#' @import rpdf
 #' @noRd
 app_ui <- function(request) {
-  tagList(
-    # Leave this function for adding external resources
-    golem_add_external_resources(),
-    # Your application UI logic
-    fluidPage(
-      h1("ViewAndClean3M")
-    )
-  )
+  mod_PDFPull_ui("amiwork")
 }
+
+
 
 #' Add external Resources to the Application
 #'
