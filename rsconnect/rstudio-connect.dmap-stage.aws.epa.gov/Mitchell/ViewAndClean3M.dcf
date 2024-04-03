@@ -1,0 +1,10 @@
+name: ViewAndClean3M
+title: ViewAndClean3M
+username: Mitchell
+account: Mitchell
+server: rstudio-connect.dmap-stage.aws.epa.gov
+hostUrl: https://rstudio-connect.dmap-stage.aws.epa.gov/__api__
+appId: 405
+bundleId: 2091
+url: https://rstudio-connect.dmap-stage.aws.epa.gov/content/084f2bf4-6fd8-4d45-9d31-cecb83017870/
+version: 1

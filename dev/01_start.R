@@ -21,12 +21,12 @@
 golem::fill_desc(
   pkg_name = "ViewAndClean3M", # The Name of the package containing the App
   pkg_title = "3M Document Viewer and Cleaner", # The Title of the package containing the App
-  pkg_description = "PKG_DESC.", # The Description of the package containing the App
+  pkg_description = "An application built for viewing 3M documents via search functionality, and cleaning data records programatically extracted from the docuset.", # The Description of the package containing the App
   author_first_name = "Mitchell", # Your First Name
   author_last_name = "Tague", # Your Last Name
   author_email = "tague.mitchell@epa.gov", # Your Email
   repo_url = NULL, # The URL of the GitHub Repo (optional),
-  pkg_version = "0.0.1" # The Version of the package containing the App
+  pkg_version = "1.1.1" # The Version of the package containing the App
 )
 
 ## Set {golem} options ----

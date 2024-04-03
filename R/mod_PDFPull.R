@@ -7,21 +7,13 @@
 #' @noRd
 #'
 #' @importFrom shiny NS tagList
+#' @import readxl
+#' @importFrom utils download.file
 mod_PDFPull_ui <- function(id){
   ns <- NS(id)
   tagList(
-    # Leave this function for adding external resources
-    golem_add_external_resources(),
-    # Your application UI logic
-    fluidPage(
-      h1("ViewAndClean3M"),
-      sidebarPanel(
-        tags$h3("Input a slug:"),
-        textInput(NS(id,"slug"), "", ""),
-      ),
-      mainPanel(
-        uiOutput(NS(id,'pdfviewer'))
-      )
+    mainPanel(
+      uiOutput(NS(id,"pdfviewer"))
     )
   )
 }
@@ -29,12 +21,29 @@ mod_PDFPull_ui <- function(id){
 #' PDFPull Server Functions
 #'
 #' @noRd
-mod_PDFPull_server <- function(id){
+mod_PDFPull_server <- function(id,slug){
   moduleServer( id, function(input, output, session){
-    files<-list.files("inst/app/www")
-    pattern<-reactive(paste(input$slug,"_3M",sep=""))
-    fileindex<-reactive(grep(pattern(),files))
-    filename<-reactive(files[fileindex()])
+    download_file_from_api <- function(id, filename,apikey){
+      out <- tryCatch({
+        utils::download.file(url=paste0("https://clowder.edap-cluster.com/api/files/",id,"/blob"),
+                             headers=c('X-API-Key'=apikey),
+                             destfile=paste0("inst/app/www/",filename),
+                             mode = "wb")
+      }, error=function(e) {
+        message(e)
+        return(NULL)
+      }
+      )
+      return(out)
+    }
+
+    fileindex<-reactive(which(substr(fileids$filename,1,4)==slug()))
+    filename<-reactive(fileids$filename[fileindex()])
+    fileid<-reactive(fileids$id[fileindex()])
+    observeEvent(filename(),
+      if (length(filename()) != 0 & !file.exists(paste0("inst/app/www/",filename()))){
+        download_file_from_api(fileid(),filename(),Sys.getenv("apikey"))
+    })
     output$pdfviewer <- renderUI({
       tags$iframe(style="height:485px; width:100%", src=paste0("www/",filename()))
     })

@@ -1,17 +1,30 @@
 Package: ViewAndClean3M
 Title: 3M Document Viewer and Cleaner
-Version: 0.0.1
-Authors@R: 
-    person("Mitchell", "Tague", , "tague.mitchell@epa.gov", role = c("cre", "aut"))
-Description: PKG_DESC.
+Version: 1.1.1
+Authors@R: person('Mitchell', 'Tague', email = 'tague.mitchell@epa.gov', role = c('cre', 'aut'))
+Description: An application built for viewing 3M documents via search functionality, and cleaning data records programatically extracted from the docuset.
 License: MIT + file LICENSE
+URL: https://github.com/MTagueEPA/ViewAndClean3M
+BugReports: https://github.com/MTagueEPA/ViewAndClean3M/issues
+Depends: 
+    R (>= 2.10)
 Imports: 
-    golem (>= 0.4.1),
+    config,
+    DBI,
+    dplyr,
+    DT,
+    golem,
+    readxl,
     rpdf,
-    shiny (>= 1.7.3)
+    RPostgres,
+    shiny (>= 1.7.3),
+    shinyjs,
+    stringr,
+    utils
+Suggests:
+    testthat
 Config/testthat/edition: 3
 Encoding: UTF-8
 LazyData: true
+LazyDataCompression: xz
 RoxygenNote: 7.2.1
-URL: https://github.com/MTagueEPA/ViewAndClean3M
-BugReports: https://github.com/MTagueEPA/ViewAndClean3M/issues

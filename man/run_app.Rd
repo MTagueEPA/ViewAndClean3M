@@ -4,7 +4,7 @@
 \alias{run_app}
 \title{Run the Shiny Application}
 \usage{
-run_app(user = "username", pass = "password")
+run_app(...)
 }
 \arguments{
 \item{...}{arguments to pass to golem_opts.

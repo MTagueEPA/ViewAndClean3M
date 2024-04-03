@@ -49,8 +49,12 @@ rsconnect::deployApp(
     "R/",
     "inst/",
     "data/",
+    "man/",
     "NAMESPACE",
     "DESCRIPTION",
+    "License",
+    "README.Rmd",
+    ".Renviron",
     "app.R"
   ),
   appId = rsconnect::deployments(".")$appID,

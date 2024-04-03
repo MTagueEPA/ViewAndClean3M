@@ -6,7 +6,17 @@
 #' @import rpdf
 #' @noRd
 app_ui <- function(request) {
-  mod_PDFPull_ui("amiwork")
+  tabsetPanel(
+    id = "overall",
+    type = "hidden",
+    tabPanel(title = "Front Page",
+             value = "fp",
+             mod_FrontPage_ui("fp")),
+    tabPanel(title = "Viewer",
+             value = "vi",
+             mod_Viewer_ui("vi"))
+  )
+
 }
 
 

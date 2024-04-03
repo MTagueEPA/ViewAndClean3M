@@ -13,29 +13,21 @@ knitr::opts_chunk$set(
 )
 ```
 
-# ViewAndClean3M
-
 <!-- badges: start -->
-[![Lifecycle: experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
+[![R-CMD-check](https://github.com/MTagueEPA/ViewAndClean3M/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/MTagueEPA/ViewAndClean3M/actions/workflows/R-CMD-check.yaml)
 <!-- badges: end -->
 
-The goal of ViewAndClean3M is to ...
+# ViewAndClean3M
+
+ViewAndClean3M is an EPA document set viewing/search tool, along with a planned tool for the cleaning of programatically extracted data records from the 3M PFAS document set.  The tool is a Shiny application 
 
 ## Installation
 
-You can install the development version of ViewAndClean3M like so:
+You can install the current development version of ViewAndClean3M from [GitHub](https://github.com/) with:
 
 ``` r
-# FILL THIS IN! HOW CAN PEOPLE INSTALL YOUR DEV PACKAGE?
-```
-
-## Example
-
-This is a basic example which shows you how to solve a common problem:
-
-```{r example}
-library(ViewAndClean3M)
-## basic example code
+# install.packages("devtools")
+devtools::install_github("MTagueEPA/ViewAndClean3M")
 ```
 
 What is special about using `README.Rmd` instead of just `README.md`? You can include R chunks like so:
