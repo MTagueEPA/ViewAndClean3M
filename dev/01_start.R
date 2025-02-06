@@ -25,7 +25,7 @@ golem::fill_desc(
   author_first_name = "Mitchell", # Your First Name
   author_last_name = "Tague", # Your Last Name
   author_email = "tague.mitchell@epa.gov", # Your Email
-  repo_url = NULL, # The URL of the GitHub Repo (optional),
+  repo_url = "https://github.com/MTagueEPA/ViewAndClean3M", # The URL of the GitHub Repo (optional),
   pkg_version = "1.1.1" # The Version of the package containing the App
 )
 

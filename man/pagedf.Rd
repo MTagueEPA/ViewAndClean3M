@@ -5,7 +5,7 @@
 \alias{pagedf}
 \title{Pagedf}
 \format{
-A data frame containing 2 columns - document slug, page number, and
+A data frame containing 3 columns - document slug, page number, and
 string copy of the OCR output for the document
 }
 \usage{

@@ -26,7 +26,9 @@ mod_DocSearch_ui <- function(id){
     h3("Input a term to search for.  Use ; to split multiple terms."),
     textInput(NS(id,"term"), "", ""),
     checkboxInput(NS(id, "page"), "Page Separated Search?"),
+    checkboxInput(NS(id, "chem"), "Chemical Matching?", value = FALSE),
     radioButtons(NS(id, "andor"), "Multiple Terms:", c("AND" = "and", "OR" = "or"), inline=TRUE),
+    radioButtons(NS(id, "metric"), "Sort Results By:", c("Hits" = "hits", "Hits/Page" = "hpp", "Pages Hit" = "ph"), inline=TRUE),
     actionButton(NS(id, "search"),"Begin Search"),
     actionButton(NS(id, "pullsaved"),"Show Saved Results"),
     DTOutput(NS(id,"table")),
@@ -40,7 +42,8 @@ mod_DocSearch_ui <- function(id){
 
 mod_DocSearch_server <- function(id,username){
   moduleServer( id, function(input, output, session){
-    fastsearch<-function(term,andor,page=FALSE) {
+    fastsearch<-function(term,andor,page=FALSE,metric) {
+      if (metric == "ph") {page = TRUE}
       if (page) {df = pagedf} else {df = filedf}
 
       #Standardize the termlist. Create two versions of the termlist, one which flattens all terms to a single
@@ -48,7 +51,7 @@ mod_DocSearch_server <- function(id,username){
       #later and to potentially catch for OCR garbage eating single spaces. Also captures the length of each
       #term, for ease of searching later.
       term<-tolower(term)
-      if (grep(";",term)) {
+      if (length(grep(";",term) != 0)) {
         multi<-TRUE
         termvec<-str_split(term,";")[[1]]
         termsflat<-c()
@@ -58,11 +61,11 @@ mod_DocSearch_server <- function(id,username){
           splitlist<-str_split(termvec[i],"[^a-zA-Z0-9]")[[1]]
           #Take the split vector for a term, find it's length, then create a flattened and a spaced term from it.
           these<-which(splitlist %in% c("", " "))
-          if (length(these != 0)){temp<-splitlist[-these]}
+          if (length(these != 0)){temp<-splitlist[-these]} else {temp<-splitlist}
           termslength[i]<-length(temp)
           tempstrflat<-temp[1]
           tempstrspace<-temp[1]
-          if (termslength[i] > 1) {for (j in 2:termlength) {
+          if (termslength[i] > 1) {for (j in 2:termslength) {
             tempstrflat<-paste(tempstrflat,temp[j],sep="")
             tempstrspace<-paste(tempstrspace,temp[j])
           }}
@@ -76,7 +79,7 @@ mod_DocSearch_server <- function(id,username){
         splitlist<-str_split(term,"[^a-zA-Z0-9]")[[1]]
         #Take the split vector for a term, find it's length, then create a flattened and a spaced term from it.
         these<-which(splitlist %in% c("", " "))
-        if (length(these != 0)){temp<-splitlist[-these]}
+        if (length(these != 0)){temp<-splitlist[-these]} else {temp<-splitlist}
         termlength<-length(temp)
         tempstrflat<-temp[1]
         tempstrspace<-temp[1]
@@ -93,7 +96,7 @@ mod_DocSearch_server <- function(id,username){
       columns<-c("Slug")
       if (page) {columns<-c(columns,"Page")}
       if (multi) {columns<-c(columns,"Most Common")}
-      columns<-c(columns,"Hits")
+      if (metric == "hpp") {columns <- c(columns,"Hits/Page")} else {columns<-c(columns,"Hits")}
       results<-as.data.frame(matrix(nrow=0,ncol=length(columns)))
       colnames(results)<-columns
 
@@ -104,6 +107,7 @@ mod_DocSearch_server <- function(id,username){
       for (i in 1:nrow(df)) {
         if (i %% 50 == 0) {incProgress(50/progn)}
         text<-df$Text[i]
+        if (metric == "hpp") {pagecount<-df$PageCount[i]} else {pagecount<-1}
         if (is.na(text) | length(text) == 0 | nchar(text) == 0) {next}
         text<-str_split(text,"[^a-zA-Z0-9]")[[1]]
         text<-text[which(text!="")]
@@ -117,8 +121,8 @@ mod_DocSearch_server <- function(id,username){
             n[j]<-length(hits)
             if (termslength[j] > 1 & termslength[j] < length(text)) {
               textvec<-c()
-              for (k in termlength:length(text)) {
-                index<-k-termlength+1
+              for (k in termslength[j]:length(text)) {
+                index<-k-termslength[j]+1
                 temp<-text[index:k]
                 textvec[index]<-paste(temp,collapse=" ")
               }
@@ -127,6 +131,7 @@ mod_DocSearch_server <- function(id,username){
           }
           if (andor == "and") {
             if (sum(n > 0) == length(n)) {
+              n<-n/pagecount
               tempr<-c(df$Slug[i])
               if (page) {tempr<-cbind(tempr,df$Page[i])}
               this.one<-which.max(n)
@@ -135,6 +140,7 @@ mod_DocSearch_server <- function(id,username){
             }
           } else {
             if (sum(n > 0)) {
+              n<-n/pagecount
               tempr<-c(df$Slug[i])
               if (page) {tempr<-cbind(tempr,df$Page[i])}
               this.one<-which.max(n)
@@ -160,6 +166,7 @@ mod_DocSearch_server <- function(id,username){
             n<-n+length(hits)
           }
           if (n > 0) {
+            n<-n/pagecount
             tempr<-c(df$Slug[i])
             if (page) {tempr<-cbind(tempr,df$Page[i])}
             tempr<-c(tempr,n)
@@ -170,8 +177,27 @@ mod_DocSearch_server <- function(id,username){
       #And return results!
       colnames(results)<-columns
       results<-distinct(results)
-      results$Hits<-as.numeric(results$Hits)
-      return(results[order(results$Hits,decreasing=TRUE),])
+      if (metric == "hpp") {
+        results$`Hits/Page`<-as.numeric(results$`Hits/Page`)
+        return(results[order(results$`Hits/Page`,decreasing=TRUE),])
+      } else if (metric == "ph") {
+        temp<-results
+        temp$Hits<-as.numeric(temp$Hits)
+        hitslugs<-unique(temp$Slug)
+        columns<-c("Slug", "Pages Hit")
+        results<-as.data.frame(matrix(nrow=length(hitslugs),ncol=length(columns)))
+        colnames(results)<-columns
+        results$Slug<-hitslugs
+        for (k in 1:nrow(results)) {
+          this.df<-temp[which(temp$Slug==results$Slug[k]),]
+          results[k,2] <- nrow(this.df)
+        }
+        results[,2]<-as.numeric(results[,2])
+        return(results[order(results[,2],decreasing=TRUE),])
+      } else {
+        results$Hits<-as.numeric(results$Hits)
+        return(results[order(results$Hits,decreasing=TRUE),])
+      }
     }
 
     ns <- session$ns
@@ -190,6 +216,12 @@ mod_DocSearch_server <- function(id,username){
       textOutput("No saved results!  Please make a document search and save it first."),
       title = "No Saved Results"
     )
+    nochem<-modalDialog(
+      textOutput("This is not a chemical identifier currently in our list!  If you're
+                 certain this is a chemical identifier with synonyms, please reach out
+                 to Mitchell or Risa"),
+      title = "No Chemical Synonyms"
+    )
     savedres<-modalDialog(
       DTOutput(ns("savedtable")),
       actionButton(ns("loadtable"),"Load Selected Table"),
@@ -200,13 +232,62 @@ mod_DocSearch_server <- function(id,username){
 
     holder<-reactiveValues(df = data.frame())
     observeEvent(input$search,{
-      thistable<-withProgress(fastsearch(input$term, input$andor, page = input$page), value = 0,
+      problem<-FALSE
+      andor<-input$andor
+      term<-input$term
+      term<-tolower(term)
+      if (input$chem) {
+        andor<-"or"
+        if (term %in% chems[[1]]) {
+          ind<-which(chems[,1] == term)
+          term<-paste0(chems[ind,c(1,2)],collapse="; ")
+          if (!is.na(chems[ind,3])) {
+            term<-paste(term,chems[ind,3],sep="; ")
+          }
+          if (!is.na(chems[ind,4])) {
+            term<-paste(term,chems[ind,4],sep="; ")
+          }
+        } else if (term %in% chems[[2]]) {
+          ind<-which(chems[,2] == term)
+          term<-paste0(chems[ind,c(1,2)],collapse="; ")
+          if (!is.na(chems[ind,3])) {
+            term<-paste(term,chems[ind,3],sep="; ")
+          }
+          if (!is.na(chems[ind,4])) {
+            term<-paste(term,chems[ind,4],sep="; ")
+          }
+        } else {
+          ind1<-grep(term, chems[3])
+          if (length(ind1) == 0) {
+            ind2<-grep(term, chems[4])
+            if (length(ind2) == 0) {
+              problem<-TRUE
+              showModal(nochem)
+            } else {
+              term<-paste0(chems[ind2,c(1,2,4)],collapse="; ")
+              if (!is.na(chems[ind2,3])) {
+                term<-paste(term,chems[ind2,3],sep="; ")
+              }
+            }
+          } else {
+            term<-paste0(chems[ind1,c(1:3)],collapse="; ")
+            if (!is.na(chems[ind1,4])) {
+              term<-paste(term,chems[ind1,4],sep="; ")
+            }
+          }
+        }
+      }
+      if (!problem) {
+        metric<-input$metric
+        if (input$page) {metric<-"hits"}
+        thistable<-withProgress(fastsearch(term, andor, page = input$page, metric = metric), value = 0,
                               message = "Searching Document Set")
-      holder$df<-as.data.frame(thistable)
-      output$table<-renderDT(thistable,
+        holder$df<-as.data.frame(thistable)
+        output$table<-renderDT(thistable,
                              rownames=FALSE,
                              selection='single')
-      if (conbool) {show(id = "newsaved")}
+        if (conbool) {show(id = "newsaved")}
+      }
     })
     observeEvent(input$pullsaved,{
       restable<-dbReadTable(con,"results")
@@ -269,7 +350,7 @@ mod_DocSearch_server <- function(id,username){
         pagebool<-rep(FALSE,n)
         page<-rep(1,n)
       }
-      if (grep(";",input$term)) {
+      if (length(grep(";",input$term)) != 0) {
         multi<-rep(input$andor,n)
         common<-holder$df$`Most Common`
       } else {

@@ -20,7 +20,7 @@ attachment::att_amend_desc()
 
 ## Add modules ----
 ## Create a module infrastructure in R/
-golem::add_module(name = "FrontPage", with_test = TRUE) # Name of the module
+golem::add_module(name = "DCAPDocs", with_test = TRUE) # Name of the module
 golem::add_module(name = "DirectInput", with_test = TRUE) # Name of the module
 
 ## Add helper functions ----

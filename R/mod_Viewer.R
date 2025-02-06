@@ -14,20 +14,25 @@ mod_Viewer_ui <- function(id){
     golem_add_external_resources(),
     # Your application UI logic
     fluidPage(
-      h1("ViewAndClean3M"),
+      h1("Document Viewer"),
       sidebarPanel(
         tabsetPanel(
           id = NS(id,"searchpull"),
           tabPanel(
-            title = 'DS Tab',
+            title = 'DCAP Documents',
+            value = ns('dctab'),
+            mod_DCAPDocs_ui(NS(id,"dc"))
+          ),
+          tabPanel(
+            title = '3M DocSearch',
             value = ns('dstab'),
             mod_DocSearch_ui(NS(id,"ds"))
           ),
-          tabPanel(
-            title = 'DI Tab',
-            value = ns('ditab'),
-            mod_DirectInput_ui(NS(id,"di"))
-          )
+          # tabPanel(
+          #   title = '3M Slugs',
+          #   value = ns('ditab'),
+          #   mod_DirectInput_ui(NS(id,"di"))
+          # )
         )
       ),
       mod_PDFPull_ui(NS(id,"pdf"))
@@ -43,12 +48,18 @@ mod_Viewer_server <- function(id,username){
     ns <- session$ns
     dival<-mod_DirectInput_server("di")
     dsval<-mod_DocSearch_server("ds",username)
+    dcval<-mod_DCAPDocs_server("dc",username)
     slugf<-reactive(
       if (input$searchpull=="vi-ditab") {
         dival()
+      } else if (input$searchpull == "vi-dctab") {
+        dcval()
       } else {dsval()}
     )
-    mod_PDFPull_server("pdf",slugf)
+    group<-reactive(
+      if (input$searchpull == "vi-dctab") {"DCAP"} else {"3M"}
+    )
+    mod_PDFPull_server("pdf",slugf,group)
   })
 }
 
